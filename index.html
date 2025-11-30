@@ -1,0 +1,959 @@
+    <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Moyenne-Artyom</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- reste du code... -->
+<meta name="theme-color" content="#1d4ed8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --accent1: #22c55e;
+      --accent2: #f97316;
+      --accent3: #8b5cf6;
+      --text-main: #111827;
+      --text-soft: #6b7280;
+      --border: #e5e7eb;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+    header {
+      background: linear-gradient(135deg, #1d4ed8, #4f46e5);
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+    header .subtitle { font-size: 12px; opacity: 0.9; }
+    .container {
+      max-width: 1200px;
+      margin: 12px auto 18px;
+      padding: 0 10px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    h2 { margin: 0 0 8px; font-size: 16px; }
+    .small { font-size: 11px; color: var(--text-soft); }
+
+    button, .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+      transition: transform 0.05s ease, box-shadow 0.05s ease, background 0.1s ease;
+    }
+    button:hover, .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
+    }
+    button.danger {
+      background: var(--danger);
+      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .breadcrumbs { font-size: 11px; color: var(--text-soft); }
+
+    .nav-btn {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: white;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+      transition: transform 0.05s ease, box-shadow 0.05s ease, opacity 0.1s ease;
+    }
+    .nav-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.35);
+    }
+    .nav-accueil { background:#4b5563; }
+    .nav-t1      { background:#2563eb; }
+    .nav-t2      { background:#22c55e; }
+    .nav-t3      { background:#f97316; }
+    .nav-annee   { background:#8b5cf6; }
+    .nav-btn.active {
+      box-shadow: 0 0 0 2px white, 0 0 0 4px rgba(15,23,42,0.25);
+      opacity: 1;
+    }
+    .nav-btn:not(.active) { opacity: 0.7; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .period-card {
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: #0f172a;
+      background: white;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .period-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    .period-card[data-periode="T1"]::before { background: radial-gradient(circle at top left, #2563eb, transparent); }
+    .period-card[data-periode="T2"]::before { background: radial-gradient(circle at top left, #22c55e, transparent); }
+    .period-card[data-periode="T3"]::before { background: radial-gradient(circle at top left, #f97316, transparent); }
+    .period-card[data-periode="ANNEE"]::before{ background: radial-gradient(circle at top left, #8b5cf6, transparent); }
+    .period-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+      color: var(--text-soft);
+    }
+    .pill strong { color: var(--text-main); }
+
+    .moy-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .moy-label { color: var(--text-soft); }
+    .moy-value { font-weight: 600; }
+    .moy-value.good { color: #16a34a; }
+    .moy-value.bad  { color: #dc2626; }
+
+    .transition-block {
+      margin-top: 8px;
+      margin-bottom: 4px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .transition-block::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #9ca3af;
+    }
+
+    .controls-row {
+      display: grid;
+      grid-template-columns: minmax(70px, 1fr) repeat(3, minmax(60px, 0.7fr)) 32px;
+      gap: 6px;
+      align-items: center;
+      font-size: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .controls-row-header {
+      font-weight: 600;
+      color: var(--text-soft);
+      border-bottom: 1px solid var(--border);
+      background: #f9fafb;
+    }
+    .controls-row span.label { font-size: 11px; color: var(--text-soft); }
+    .controls-row input {
+      width: 100%;
+      padding: 3px 5px;
+      font-size: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .controls-row-data:nth-child(odd) { background-color: #f9fafb; }
+    .controls-row-data:nth-child(even){ background-color: #eef2ff; }
+
+    .trash-btn {
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 0;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .trash-btn:hover { color: #dc2626; }
+
+    .matiere-moy {
+      margin-top: 8px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    table { border-collapse: collapse; width: 100%; }
+    th, td { font-size: 12px; }
+
+    .card-periode { position: relative; overflow: hidden; }
+    .card-periode::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    .card-periode.t1::before { background: radial-gradient(circle at top left, #2563eb, transparent); }
+    .card-periode.t2::before { background: radial-gradient(circle at top left, #22c55e, transparent); }
+    .card-periode.t3::before { background: radial-gradient(circle at top left, #f97316, transparent); }
+    .card-periode.annee::before { background: radial-gradient(circle at top left, #8b5cf6, transparent); }
+
+    .annee-notes-wrapper {
+      max-height: 320px;
+      overflow-y: auto;
+      margin-top: 10px;
+      padding-right: 4px;
+    }
+    .annee-notes-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 8px;
+      font-size: 12px;
+      table-layout: fixed;
+    }
+    .annee-notes-table th,
+    .annee-notes-table td {
+      padding: 4px 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .annee-notes-table th {
+      background: #ede9fe;
+      font-weight: 600;
+      font-size: 12px;
+      border-radius: 8px 8px 0 0;
+    }
+    .annee-notes-table td {
+      background: #faf5ff;
+    }
+    .annee-row-even td { background: #f5f3ff; }
+    .annee-row-odd  td { background: #faf5ff; }
+    .annee-notes-table tr:last-child td {
+      border-radius: 0 0 8px 8px;
+    }
+
+    .note-t1 { color: #2563eb; }
+    .note-t2 { color: #16a34a; }
+    .note-t3 { color: #ea580c; }
+
+    .annee-moy-matieres {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 6px;
+      margin-top: 12px;
+      font-size: 12px;
+      table-layout: fixed;
+    }
+    .annee-moy-matieres th,
+    .annee-moy-matieres td {
+      padding: 4px 6px;
+      text-align: center;
+      vertical-align: middle;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .annee-moy-matieres th {
+      font-weight: 600;
+      background: #e0e7ff;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 16px;
+      max-width: 360px;
+      width: 90%;
+      box-shadow: 0 20px 40px rgba(15,23,42,0.35);
+      border: 1px solid var(--border);
+    }
+    .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .modal-body  { font-size: 13px; color: var(--text-soft); margin-bottom: 10px; }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .btn-outline {
+      background: white;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+    }
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: 1fr; }
+      .controls-row {
+        grid-template-columns: minmax(70px, 1fr) repeat(3, minmax(55px, 0.7fr)) 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Moyennes 4ème - Artyom</h1>
+    <div class="subtitle">Suivi des notes – Offline, PC & Android</div>
+  </div>
+  <button class="danger" onclick="ouvrirConfirmationEffacer()">Effacer toutes les notes</button>
+</header>
+
+<div class="container">
+
+  <div class="top-actions">
+    <div class="breadcrumbs" id="breadcrumbs"></div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <button id="btn-accueil" class="nav-btn nav-accueil" onclick="goHome()">Accueil
+</button>
+      <button id="btn-T1" class="nav-btn nav-t1" onclick="openPeriode('T1')">T1</button>
+      <button id="btn-T2" class="nav-btn nav-t2" onclick="openPeriode('T2')">T2</button>
+      <button id="btn-T3" class="nav-btn nav-t3" onclick="openPeriode('T3')">T3</button>
+      <button id="btn-ANNEE" class="nav-btn nav-annee" onclick="openPeriode('ANNEE')">Année</button>
+    </div>
+  </div>
+
+  <div id="screenAccueil" class="card"></div>
+  <div id="screenPeriode" class="card card-periode" style="display:none;"></div>
+
+</div>
+
+<div id="confirmBackdrop" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-title">Effacer toutes les notes ?</div>
+    <div class="modal-body">
+      Cette action supprimera toutes les notes et coefficients enregistrés pour tous les trimestres et toutes les matières.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fermerConfirmationEffacer()">Annuler</button>
+      <button class="btn danger" onclick="confirmerEffacer()">Effacer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MATIERES = [
+  "Arts plastiques","Anglais","Techno","Musique","EPS",
+  "Espagnol","Français","Hist-Géo","Math","Physique","SVT","Chinois"
+];
+const MAX_CONTROLES = 15;
+const STORAGE_KEY = "moyennes_artyom_4eme_v3";
+
+function donneesParDefaut() {
+  const periodes=["T1","T2","T3"];
+  const data={};
+  periodes.forEach(p=>{
+    data[p]={};
+    MATIERES.forEach(m=>{
+      data[p][m]=[];
+      for(let i=0;i<MAX_CONTROLES;i++){
+        data[p][m].push({x:"",y:"",coef:""});
+      }
+    });
+  });
+  return data;
+}
+
+function chargerDonnees(){
+  try{
+    const txt=localStorage.getItem(STORAGE_KEY);
+    if(!txt) return donneesParDefaut();
+    const parsed=JSON.parse(txt);
+    if(!parsed.T1||!parsed.T2||!parsed.T3) return donneesParDefaut();
+    ["T1","T2","T3"].forEach(p=>{
+      MATIERES.forEach(m=>{
+        if(!parsed[p][m]) parsed[p][m]=[];
+        while(parsed[p][m].length<MAX_CONTROLES){
+          parsed[p][m].push({x:"",y:"",coef:""});
+        }
+      });
+    });
+    return parsed;
+  }catch(e){ return donneesParDefaut(); }
+}
+
+function sauvegarderDonnees(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(donnees)); }
+
+let donnees=chargerDonnees();
+let vueCourante="ACCUEIL";
+let periodeCourante="T1";
+let matiereCourante=null;
+
+function toNumber(v){ const n=parseFloat(v); return isNaN(n)?NaN:n; }
+function arrondi2(n){ return Math.round(n*100)/100; }
+
+function valeurOuDefaut(v, def) {
+  const n = parseFloat(v);
+  if (isNaN(n) || n <= 0) return def;
+  return n;
+}
+
+function calculerMoyenneMatiere(periode,matiere){
+  const controles=donnees[periode][matiere];
+  let somme=0,sommeCoef=0;
+  controles.forEach(c=>{
+    const x=toNumber(c.x);
+    if(isNaN(x)) return;
+    const y=valeurOuDefaut(c.y,20);
+    const coef=valeurOuDefaut(c.coef,1);
+    const note20=x/y*20;
+    somme+=note20*coef;
+    sommeCoef+=coef;
+  });
+  if(sommeCoef===0) return NaN;
+  return somme/sommeCoef;
+}
+
+function calculerMoyennesTrimestre(periode){
+  const result={matieres:{},MoyGenSans:NaN,MoyGenAvec:NaN};
+  MATIERES.forEach(m=>{ result.matieres[m]=calculerMoyenneMatiere(periode,m); });
+  let numSans=0,denSans=0;
+  MATIERES.forEach(m=>{
+    if(m==="Chinois") return;
+    const moy=result.matieres[m];
+    if(!isNaN(moy)){ numSans+=moy; denSans++; }
+  });
+  if(denSans>0) result.MoyGenSans=numSans/denSans;
+  const moyChi=result.matieres["Chinois"];
+  let pointsChi=0;
+  if(!isNaN(moyChi)&&moyChi>10) pointsChi=moyChi-10;
+  if(denSans>0){
+    const numAvec=numSans+pointsChi;
+    const denAvec=denSans;
+    result.MoyGenAvec=numAvec/denAvec;
+  }
+  return result;
+}
+
+function calculerMoyennesAnnuelles(){
+  const result={matieres:{},MoyGenSans:NaN,MoyGenAvec:NaN};
+  MATIERES.forEach(m=>{
+    let somme=0,sommeCoef=0;
+    ["T1","T2","T3"].forEach(p=>{
+      donnees[p][m].forEach(c=>{
+        const x=toNumber(c.x);
+        if(isNaN(x)) return;
+        const y=valeurOuDefaut(c.y,20);
+        const coef=valeurOuDefaut(c.coef,1);
+        const note20=x/y*20;
+        somme+=note20*coef;
+        sommeCoef+=coef;
+      });
+    });
+    result.matieres[m]=(sommeCoef===0)?NaN:(somme/sommeCoef);
+  });
+  let numSans=0,denSans=0;
+  MATIERES.forEach(m=>{
+    if(m==="Chinois") return;
+    const moy=result.matieres[m];
+    if(!isNaN(moy)){ numSans+=moy; denSans++; }
+  });
+  if(denSans>0) result.MoyGenSans=numSans/denSans;
+  const moyChi=result.matieres["Chinois"];
+  let pointsChi=0;
+  if(!isNaN(moyChi)&&moyChi>10) pointsChi=moyChi-10;
+  if(denSans>0){
+    const numAvec=numSans+pointsChi;
+    const denAvec=denSans;
+    result.MoyGenAvec=numAvec/denAvec;
+  }
+  return result;
+}
+
+function classForMoy(v){
+  if(isNaN(v)) return "";
+  if(v>=16) return "good";
+  if(v>=10) return "";
+  return "bad";
+}
+
+function renderBreadcrumbs(){
+  const bc=document.getElementById("breadcrumbs");
+  if(vueCourante==="ACCUEIL"){ bc.textContent="Accueil"; return; }
+  let txt="Accueil › ";
+  const perLabel = periodeCourante==="ANNEE" ? "Année" :
+    (periodeCourante==="T1"?"1er trimestre":periodeCourante==="T2"?"2ème trimestre":"3ème trimestre");
+  txt+=perLabel;
+  if(matiereCourante) txt+=" › "+matiereCourante;
+  bc.innerHTML=txt;
+}
+
+function updateActiveNavButtons(){
+  ["btn-accueil","btn-T1","btn-T2","btn-T3","btn-ANNEE"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove("active");
+  });
+  if(vueCourante==="ACCUEIL"){
+    const b=document.getElementById("btn-accueil"); if(b) b.classList.add("active");
+  } else {
+    const b=document.getElementById("btn-"+periodeCourante); if(b) b.classList.add("active");
+  }
+}
+
+function renderAccueil(){
+  const el=document.getElementById("screenAccueil");
+  const per=document.getElementById("screenPeriode");
+  el.style.display="block";
+  per.style.display="none";
+
+  const resT1=calculerMoyennesTrimestre("T1");
+  const resT2=calculerMoyennesTrimestre("T2");
+  const resT3=calculerMoyennesTrimestre("T3");
+
+  function cartePeriode(code,label,res){
+    const moyS=isNaN(res.MoyGenSans)?"-":arrondi2(res.MoyGenSans).toFixed(2);
+    const moyA=isNaN(res.MoyGenAvec)?"-":arrondi2(res.MoyGenAvec).toFixed(2);
+    
+    // Couleur de fond pour moyenne SANS chinois
+    let bgColorS = "#f9fafb";
+    if (!isNaN(res.MoyGenSans)) {
+      if (res.MoyGenSans >= 18) bgColorS = "#3b82f6";
+      else if (res.MoyGenSans >= 15) bgColorS = "#22c55e";
+      else if (res.MoyGenSans >= 12) bgColorS = "#f97316";
+      else if (res.MoyGenSans >= 10) bgColorS = "#eab308";
+      else bgColorS = "#ef4444";
+    }
+    
+    // Couleur de fond pour moyenne AVEC chinois
+    let bgColorA = "#f9fafb";
+    if (!isNaN(res.MoyGenAvec)) {
+      if (res.MoyGenAvec >= 18) bgColorA = "#3b82f6";
+      else if (res.MoyGenAvec >= 15) bgColorA = "#22c55e";
+      else if (res.MoyGenAvec >= 12) bgColorA = "#f97316";
+      else if (res.MoyGenAvec >= 10) bgColorA = "#eab308";
+      else bgColorA = "#ef4444";
+    }
+
+    let tableHtml=`
+      <table>
+        <thead>
+          <tr style="background:#f9fafb;">
+            <th style="text-align:left;  padding:4px 6px; border-bottom:1px solid #e5e7eb;">Matière</th>
+            <th style="text-align:right; padding:4px 6px; border-bottom:1px solid #e5e7eb;">Moyenne</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    MATIERES.forEach(m=>{
+      const moy=res.matieres?res.matieres[m]:NaN;
+      const txt=isNaN(moy)?"-":arrondi2(moy).toFixed(2);
+      
+      // Couleur de fond pour chaque matière
+      let bgColor = "#f9fafb";
+      if (!isNaN(moy)) {
+        if (moy >= 18) bgColor = "#3b82f6";
+        else if (moy >= 15) bgColor = "#22c55e";
+        else if (moy >= 12) bgColor = "#f97316";
+        else if (moy >= 10) bgColor = "#eab308";
+        else bgColor = "#ef4444";
+      }
+      
+      tableHtml+=`
+        <tr>
+          <td style="padding:3px 6px; border-bottom:1px solid #f1f5f9;"><span>${m}</span></td>
+          <td style="padding:3px 6px; text-align:right; border-bottom:1px solid #f1f5f9;">
+            <span style="padding:3px 8px; border-radius:6px; font-weight:bold; color:white; background:${bgColor}; display:inline-block;">${txt}</span>
+          </td>
+        </tr>`;
+    });
+    tableHtml+=`</tbody></table>`;
+
+    const libSans="Sans l'option chinois";
+    const libAvec="Avec l'option chinois";
+
+    return `
+      <div class="period-card" data-periode="${code}">
+        <div class="period-title">${label}</div>
+        <div class="pill"><span>Générale</span><strong>${code}</strong></div>
+           <div style="margin-top:8px; margin-bottom:15px; font-size:12px;">
+          <span class="moy-label">${libSans} : </span>
+          <span style="padding:4px 10px; border-radius:8px; font-weight:bold; color:white; background:${bgColorS}; margin-left:6px;">${moyS}</span>
+        </div>
+        <div style="margin-bottom:8px; font-size:12px;">
+          <span class="moy-label">${libAvec} : </span>
+          <span style="padding:4px 10px; border-radius:8px; font-weight:bold; color:white; background:${bgColorA}; margin-left:6px;">${moyA}</span>
+        </div>
+        <div class="transition-block"><span class="small">Moyennes par matière</span></div>
+        ${tableHtml}
+      </div>`;
+  }
+
+  el.innerHTML=`
+    <h2>Vue d'ensemble</h2>
+    <div class="small">
+      Tableau de bord des moyennes générales et par matière par trimestre. Utilise les boutons T1, T2, T3 ou Année en haut pour saisir ou modifier les notes.
+    </div>
+       <div class="grid" style="grid-template-columns: repeat(3, 1fr); max-width: 1200px; margin-left: auto; margin-right: auto;">
+      ${cartePeriode("T1","1er trimestre",resT1)}
+      ${cartePeriode("T2","2ème trimestre",resT2)}
+      ${cartePeriode("T3","3ème trimestre",resT3)}
+    </div>`;
+}
+
+function renderPeriode(){
+  const el=document.getElementById("screenPeriode");
+  const acc=document.getElementById("screenAccueil");
+  acc.style.display="none";
+  el.style.display="block";
+
+  el.classList.remove("t1","t2","t3","annee");
+  if(periodeCourante==="T1") el.classList.add("t1");
+  else if(periodeCourante==="T2") el.classList.add("t2");
+  else if(periodeCourante==="T3") el.classList.add("t3");
+  else el.classList.add("annee");
+
+  const perLabel = (periodeCourante==="ANNEE") ? "Année" :
+    (periodeCourante==="T1"?"1er trimestre":periodeCourante==="T2"?"2ème trimestre":"3ème trimestre");
+
+  if(periodeCourante==="ANNEE"){ renderPeriodeAnnee(el,perLabel); return; }
+
+  const res=calculerMoyennesTrimestre(periodeCourante);
+  const moyS=isNaN(res.MoyGenSans)?"-":arrondi2(res.MoyGenSans).toFixed(2);
+  const moyA=isNaN(res.MoyGenAvec)?"-":arrondi2(res.MoyGenAvec).toFixed(2);
+  const clsS=classForMoy(res.MoyGenSans);
+  const clsA=classForMoy(res.MoyGenAvec);
+
+  if(!matiereCourante) matiereCourante=MATIERES[0];
+
+   let html=`
+    <h2>${perLabel}</h2>
+    <div class="small">
+      Sélectionne une matière pour saisir ou modifier les notes des contrôles.
+    </div>
+    <div style="margin-top:10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <label class="small">Matière :</label>
+
+      <select id="matiereSelect">
+        ${MATIERES.map(m=>`<option value="${m}" ${m===matiereCourante?"selected":""}>${m}</option>`).join("")}
+      </select>
+    </div>
+    <div id="matiereDetailZone"></div>`;
+  el.innerHTML=html;
+
+  document.getElementById("matiereSelect").addEventListener("change",function(){
+    matiereCourante=this.value;
+    renderMatiereDetailDansPeriode();
+  });
+  renderMatiereDetailDansPeriode();
+}
+
+function renderPeriodeAnnee(el, perLabel){
+  const resAn = calculerMoyennesAnnuelles();
+  const moyS = isNaN(resAn.MoyGenSans) ? "-" : arrondi2(resAn.MoyGenSans).toFixed(2);
+  const moyA = isNaN(resAn.MoyGenAvec) ? "-" : arrondi2(resAn.MoyGenAvec).toFixed(2);
+  const clsS = classForMoy(resAn.MoyGenSans);
+  const clsA = classForMoy(resAn.MoyGenAvec);
+
+  let html = `
+    <h2>${perLabel}</h2>
+    <div class="small">
+      Moyenne générale annuelle calculée sur toutes les notes de T1, T2 et T3.
+    </div>
+      <div style="margin-top:6px; display:inline-block;">
+      <span class="moy-label" style="font-size:12px;">Sans l'option chinois :</span>
+      <span class="moy-value" style="margin-left:8px; padding:4px 12px; border-radius:8px; font-weight:bold; color:white; background:${
+        isNaN(resAn.MoyGenSans) ? '#f9fafb' :
+        resAn.MoyGenSans >= 18 ? '#3b82f6' :
+        resAn.MoyGenSans >= 15 ? '#22c55e' :
+        resAn.MoyGenSans >= 12 ? '#f97316' :
+        resAn.MoyGenSans >= 10 ? '#eab308' : '#ef4444'
+      };">${moyS}</span>
+    </div>
+    <div style="margin-top:6px; display:inline-block; margin-left:20px;">
+      <span class="moy-label" style="font-size:12px;">Avec l'option chinois :</span>
+      <span class="moy-value" style="margin-left:8px; padding:4px 12px; border-radius:8px; font-weight:bold; color:white; background:${
+        isNaN(resAn.MoyGenAvec) ? '#f9fafb' :
+        resAn.MoyGenAvec >= 18 ? '#3b82f6' :
+        resAn.MoyGenAvec >= 15 ? '#22c55e' :
+        resAn.MoyGenAvec >= 12 ? '#f97316' :
+        resAn.MoyGenAvec >= 10 ? '#eab308' : '#ef4444'
+      };">${moyA}</span>
+    </div>
+
+    <div class="small" style="margin-top:8px;">
+      Chaque colonne est une matière, chaque ligne aligne la 1ère, 2ème, 3ème note, etc. Bleu = T1, vert = T2, orange = T3.
+    </div>
+  `;
+
+  const notesParMatiere = {};
+  MATIERES.forEach(m => { notesParMatiere[m] = []; });
+
+  ["T1","T2","T3"].forEach(p => {
+    MATIERES.forEach(m => {
+      donnees[p][m].forEach(c => {
+        const x = toNumber(c.x);
+        if (isNaN(x)) return;
+        const y = valeurOuDefaut(c.y,20);
+        const coef = valeurOuDefaut(c.coef,1);
+        const note20 = arrondi2(x / y * 20);
+        notesParMatiere[m].push({ note: note20, periode: p, coef: coef });
+      });
+    });
+  });
+
+  let maxLignes = 0;
+  MATIERES.forEach(m => {
+    if (notesParMatiere[m].length > maxLignes) maxLignes = notesParMatiere[m].length;
+  });
+
+  html += `<div class="annee-notes-wrapper">`;
+  html += `<table class="annee-notes-table"><thead><tr>`;
+  MATIERES.forEach(m => { html += `<th>${m}</th>`; });
+  html += `</tr></thead><tbody>`;
+
+  for (let i = 0; i < maxLignes; i++) {
+    const rowClass = (i % 2 === 0) ? "annee-row-even" : "annee-row-odd";
+    html += `<tr class="${rowClass}">`;
+       MATIERES.forEach(m => {
+      const n = notesParMatiere[m][i];
+      if (!n) {
+        html += `<td></td>`;
+      } else {
+        let cls = "";
+        if (n.periode === "T1") cls = "note-t1";
+        else if (n.periode === "T2") cls = "note-t2";
+        else if (n.periode === "T3") cls = "note-t3";
+        
+        // Ajouter l'exposant (coef) si différent de 1
+        let noteAffichee = n.note.toFixed(2);
+        if (n.coef && n.coef !== 1) {
+           noteAffichee += `<sup style="color:#000;">(${n.coef})</sup>`;
+        }
+        
+        html += `<td><span class="${cls}">${noteAffichee}</span></td>`;
+      }
+    });
+
+    html += `</tr>`;
+  }
+
+  html += `</tbody></table>`;
+  html += `</div>`;
+
+  html += `
+    <div class="small" style="margin-top:10px; margin-bottom:4px;">
+      Moyenne annuelle par matière (toutes notes de l'année, tous trimestres confondus).
+    </div>
+    <table class="annee-moy-matieres">
+      <tr>`;
+  
+  MATIERES.forEach(m => { 
+    html += `<th>${m}</th>`; 
+  });
+  
+  html += `</tr><tr>`;
+  
+  MATIERES.forEach(m => {
+    const moy = resAn.matieres[m];
+    const txt = isNaN(moy) ? "-" : arrondi2(moy).toFixed(2);
+    
+    let bgColor = "#f9fafb";
+    if (!isNaN(moy)) {
+      if (moy >= 18) bgColor = "#3b82f6";
+      else if (moy >= 15) bgColor = "#22c55e";
+      else if (moy >= 12) bgColor = "#f97316";
+      else if (moy >= 10) bgColor = "#eab308";
+      else bgColor = "#ef4444";
+    }
+    
+    html += `<td style="background:${bgColor}; font-weight:bold; color:white;">${txt}</td>`;
+  });
+  
+  html += `</tr></table>`;
+
+  el.innerHTML = html;
+}
+
+function renderMatiereDetailDansPeriode(){
+  const zone=document.getElementById("matiereDetailZone");
+  if(!zone) return;
+  if(periodeCourante==="ANNEE"){ zone.innerHTML=""; return; }
+
+  const titrePeriode = (periodeCourante==="T1"?"1er trimestre":
+                        periodeCourante==="T2"?"2ème trimestre":"3ème trimestre");
+
+  let html=`
+    <div class="matiere-header-row" style="margin-top:10px;">
+      <div>
+        <h2>${matiereCourante}</h2>
+        <div class="small">
+          ${titrePeriode} – saisie jusqu'à 15 contrôles
+        </div>
+      </div>
+    </div>
+  `;
+
+  const controles=donnees[periodeCourante][matiereCourante];
+
+  html+=`
+    <div class="controls-row controls-row-header">
+      <div>Contrôle</div>
+      <div>Note</div>
+      <div>Sur</div>
+      <div>Coef</div>
+      <div></div>
+    </div>`;
+  controles.forEach((c,i)=>{
+    html+=`
+      <div class="controls-row controls-row-data">
+        <div><span class="label">Contrôle ${i+1}</span></div>
+        <div><input type="number" step="0.01" value="${c.x||""}"
+          onchange="majValeur('${periodeCourante}','${matiereCourante}',${i},'x',this.value)"></div>
+        <div><input type="number" step="0.01" value="${c.y||""}"
+          onchange="majValeur('${periodeCourante}','${matiereCourante}',${i},'y',this.value)"></div>
+        <div><input type="number" step="0.01" value="${c.coef||""}"
+          onchange="majValeur('${periodeCourante}','${matiereCourante}',${i},'coef',this.value)"></div>
+        <div style="text-align:center;">
+          <button class="trash-btn" title="Effacer ce contrôle"
+            onclick="supprimerControle('${periodeCourante}','${matiereCourante}',${i})">🗑</button>
+        </div>
+      </div>`;
+  });
+
+  const moy=calculerMoyenneMatiere(periodeCourante,matiereCourante);
+  const txtM=isNaN(moy)?"-":arrondi2(moy).toFixed(2);
+  
+  // Déterminer la couleur de fond selon la moyenne
+  let bgColor = "#f9fafb";
+  if (!isNaN(moy)) {
+    if (moy >= 18) bgColor = "#3b82f6"; // bleu
+    else if (moy >= 15) bgColor = "#22c55e"; // vert
+    else if (moy >= 12) bgColor = "#f97316"; // orange
+    else if (moy >= 10) bgColor = "#eab308"; // jaune
+    else bgColor = "#ef4444"; // rouge
+  }
+
+  html+=`
+    <div class="matiere-moy">
+      <div>Moyenne de ${matiereCourante} (${titrePeriode}) :</div>
+      <div><span style="padding:4px 12px; border-radius:8px; font-weight:bold; color:white; background:${bgColor};">${txtM}</span></div>
+    </div>`;
+  zone.innerHTML=html;
+}
+
+function supprimerControle(periode,matiere,index){
+  donnees[periode][matiere][index]={x:"",y:"",coef:""};
+  sauvegarderDonnees();
+  render();
+}
+
+function ouvrirConfirmationEffacer(){
+  document.getElementById("confirmBackdrop").style.display="flex";
+}
+function fermerConfirmationEffacer(){
+  document.getElementById("confirmBackdrop").style.display="none";
+}
+function confirmerEffacer(){
+  donnees=donneesParDefaut();
+  sauvegarderDonnees();
+  fermerConfirmationEffacer();
+  goHome();
+}
+
+function goHome(){ vueCourante="ACCUEIL"; matiereCourante=null; render(); }
+function openPeriode(p){ vueCourante="PERIODE"; periodeCourante=p; matiereCourante=null; render(); }
+
+function majValeur(periode,matiere,index,champ,valeur){
+  donnees[periode][matiere][index][champ]=valeur;
+  
+  // AUTO-REMPLISSAGE : si on vient de saisir une note (champ x) et qu'elle n'est pas vide
+  if(champ === 'x' && valeur && valeur.trim() !== ''){
+    const controle = donnees[periode][matiere][index];
+    // Si "Sur" est vide, on met 20
+    if(!controle.y || controle.y.toString().trim() === ''){
+      donnees[periode][matiere][index].y = '20';
+    }
+    // Si "Coef" est vide, on met 1
+    if(!controle.coef || controle.coef.toString().trim() === ''){
+      donnees[periode][matiere][index].coef = '1';
+    }
+  }
+  
+  sauvegarderDonnees();
+  render();
+}
+
+function render(){
+  renderBreadcrumbs();
+  updateActiveNavButtons();
+  if(vueCourante==="ACCUEIL") renderAccueil();
+  else renderPeriode();
+}
+render();
+</script>
+
+</body>
+</html>
+
+
+
