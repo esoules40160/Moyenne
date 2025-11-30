@@ -4,6 +4,7 @@
   "description": "Suivi des notes de 4ème",
   "start_url": "./index.html",
   "display": "standalone",
+  "orientation": "landscape",
   "background_color": "#f3f4f6",
   "theme_color": "#1d4ed8",
   "orientation": "portrait"
